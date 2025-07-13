@@ -2,7 +2,7 @@
 
 ## Python Configuration
 - `pyproject.toml` - Python project configuration with Black, isort, mypy, pytest settings
-- `setup.cfg` - Additional Python setup configuration  
+- `setup.cfg` - Additional Python setup configuration
 - `.pre-commit-config.yaml` - Pre-commit hooks configuration
 
 ## Docker Configuration

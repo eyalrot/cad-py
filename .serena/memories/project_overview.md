@@ -5,7 +5,7 @@ CAD-PY is a professional 2D CAD system consisting of a Python microservice backe
 
 ## Architecture
 - **Backend**: Python microservice with PostgreSQL, Redis, and Nginx
-- **Frontend**: Qt6 desktop client (PyQt6) 
+- **Frontend**: Qt6 desktop client (PyQt6)
 - **Communication**: Client-server architecture (gRPC/REST APIs)
 - **Deployment**: Docker Compose with multi-container setup
 

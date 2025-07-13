@@ -13,7 +13,7 @@ Implemented classes:
 - `Point2D` - 2D point with x,y coordinates
 - `Vector2D` - 2D vector operations
 - `Line` - Line geometry class
-- `Circle` - Circle geometry class  
+- `Circle` - Circle geometry class
 - `Arc` - Arc geometry class
 - `BoundingBox` - Bounding box calculations
 

@@ -6,7 +6,7 @@
 - Represents 2D point with x, y coordinates
 - Basic point operations and calculations
 
-### Vector2D (`vector.py`) 
+### Vector2D (`vector.py`)
 - 2D vector mathematics
 - Vector operations (addition, subtraction, dot product, etc.)
 
