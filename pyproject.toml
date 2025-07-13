@@ -1,3 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cad-py"
+version = "0.1.0"
+description = "Professional 2D CAD system built with Python"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "CAD-PY Team", email = "info@cad-py.org"}
+]
+keywords = ["cad", "drawing", "engineering", "design", "2d"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Manufacturing",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Scientific/Engineering :: GIS",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "PyQt6>=6.4.0",
+    "grpcio>=1.54.0",
+    "grpcio-tools>=1.54.0",
+    "protobuf>=4.23.0",
+    "numpy>=1.24.0",
+    "shapely>=2.0.0",
+    "ezdxf>=1.0.0",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.4.0",
+    "flake8>=6.0.0",
+]
+
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/cad-py/cad-py"
+Documentation = "https://cad-py.readthedocs.io/"
+Repository = "https://github.com/cad-py/cad-py.git"
+"Bug Tracker" = "https://github.com/cad-py/cad-py/issues"
+
 [tool.black]
 line-length = 88
 target-version = ['py312']
@@ -41,7 +100,8 @@ module = [
     "google.*",
     "PySide6.*",
     "shapely.*",
-    "scipy.*"
+    "scipy.*",
+    "ezdxf.*"
 ]
 ignore_missing_imports = true
 

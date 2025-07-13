@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package cad.entity;
+
+import "geometry.proto";
+
+// Entity definition
+message Entity {
+    string id = 1;
+    string entity_type = 2;
+    string layer_id = 3;
+    cad.geometry.EntityGeometry geometry = 4;
+    map<string, string> properties = 5;
+    bool visible = 6;
+    bool locked = 7;
+    string created_at = 8;
+    string modified_at = 9;
+}
+
+// Entity filter for queries
+message EntityFilter {
+    repeated string entity_types = 1;
+    repeated string layer_ids = 2;
+    bool visible_only = 3;
+    optional bool locked_only = 4;
+    optional cad.geometry.BoundingBox bbox = 5;
+    map<string, string> properties = 6;
+}
+
+// Entity operations
+message CreateEntityRequest {
+    string document_id = 1;
+    string entity_type = 2;
+    string layer_id = 3;
+    cad.geometry.EntityGeometry geometry = 4;
+    map<string, string> properties = 5;
+}
+
+message CreateEntityResponse {
+    Entity entity = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message UpdateEntityRequest {
+    string document_id = 1;
+    string entity_id = 2;
+    optional string layer_id = 3;
+    optional cad.geometry.EntityGeometry geometry = 4;
+    map<string, string> properties = 5;
+    optional bool visible = 6;
+    optional bool locked = 7;
+}
+
+message UpdateEntityResponse {
+    Entity entity = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message DeleteEntityRequest {
+    string document_id = 1;
+    string entity_id = 2;
+}
+
+message DeleteEntityResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message GetEntityRequest {
+    string document_id = 1;
+    string entity_id = 2;
+}
+
+message GetEntityResponse {
+    Entity entity = 1;
+    bool found = 2;
+    string error_message = 3;
+}
+
+message QueryEntitiesRequest {
+    string document_id = 1;
+    optional EntityFilter filter = 2;
+    optional int32 limit = 3;
+    optional int32 offset = 4;
+}
+
+message QueryEntitiesResponse {
+    repeated Entity entities = 1;
+    int32 total_count = 2;
+    bool success = 3;
+    string error_message = 4;
+}
+
+message MoveEntitiesRequest {
+    string document_id = 1;
+    repeated string entity_ids = 2;
+    string target_layer_id = 3;
+}
+
+message MoveEntitiesResponse {
+    int32 moved_count = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+// Batch operations
+message BatchCreateEntitiesRequest {
+    string document_id = 1;
+    repeated CreateEntityRequest entities = 2;
+}
+
+message BatchCreateEntitiesResponse {
+    repeated Entity created_entities = 1;
+    int32 success_count = 2;
+    repeated string error_messages = 3;
+}
+
+message BatchDeleteEntitiesRequest {
+    string document_id = 1;
+    repeated string entity_ids = 2;
+}
+
+message BatchDeleteEntitiesResponse {
+    int32 deleted_count = 1;
+    bool success = 2;
+    repeated string error_messages = 3;
+}

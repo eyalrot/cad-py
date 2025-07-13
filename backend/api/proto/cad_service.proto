@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package cad.service;
+
+import "document.proto";
+import "layer.proto";
+import "entity.proto";
+import "geometry.proto";
+
+// Main CAD service
+service CADService {
+    // Document operations
+    rpc CreateDocument(cad.document.CreateDocumentRequest) returns (cad.document.CreateDocumentResponse);
+    rpc OpenDocument(cad.document.OpenDocumentRequest) returns (cad.document.OpenDocumentResponse);
+    rpc SaveDocument(cad.document.SaveDocumentRequest) returns (cad.document.SaveDocumentResponse);
+    rpc LoadDocument(cad.document.LoadDocumentRequest) returns (cad.document.LoadDocumentResponse);
+    rpc UpdateDocument(cad.document.UpdateDocumentRequest) returns (cad.document.UpdateDocumentResponse);
+    rpc DeleteDocument(cad.document.DeleteDocumentRequest) returns (cad.document.DeleteDocumentResponse);
+    rpc GetDocumentStatistics(cad.document.GetDocumentStatisticsRequest) returns (cad.document.GetDocumentStatisticsResponse);
+    rpc ListDocuments(cad.document.ListDocumentsRequest) returns (cad.document.ListDocumentsResponse);
+
+    // Layer operations
+    rpc CreateLayer(cad.layer.CreateLayerRequest) returns (cad.layer.CreateLayerResponse);
+    rpc UpdateLayer(cad.layer.UpdateLayerRequest) returns (cad.layer.UpdateLayerResponse);
+    rpc DeleteLayer(cad.layer.DeleteLayerRequest) returns (cad.layer.DeleteLayerResponse);
+    rpc GetLayer(cad.layer.GetLayerRequest) returns (cad.layer.GetLayerResponse);
+    rpc ListLayers(cad.layer.ListLayersRequest) returns (cad.layer.ListLayersResponse);
+    rpc SetCurrentLayer(cad.layer.SetCurrentLayerRequest) returns (cad.layer.SetCurrentLayerResponse);
+
+    // Entity operations
+    rpc CreateEntity(cad.entity.CreateEntityRequest) returns (cad.entity.CreateEntityResponse);
+    rpc UpdateEntity(cad.entity.UpdateEntityRequest) returns (cad.entity.UpdateEntityResponse);
+    rpc DeleteEntity(cad.entity.DeleteEntityRequest) returns (cad.entity.DeleteEntityResponse);
+    rpc GetEntity(cad.entity.GetEntityRequest) returns (cad.entity.GetEntityResponse);
+    rpc QueryEntities(cad.entity.QueryEntitiesRequest) returns (stream cad.entity.Entity);
+    rpc MoveEntities(cad.entity.MoveEntitiesRequest) returns (cad.entity.MoveEntitiesResponse);
+
+    // Batch operations
+    rpc BatchCreateEntities(cad.entity.BatchCreateEntitiesRequest) returns (cad.entity.BatchCreateEntitiesResponse);
+    rpc BatchDeleteEntities(cad.entity.BatchDeleteEntitiesRequest) returns (cad.entity.BatchDeleteEntitiesResponse);
+
+    // Drawing operations (convenience methods)
+    rpc DrawLine(DrawLineRequest) returns (cad.entity.CreateEntityResponse);
+    rpc DrawCircle(DrawCircleRequest) returns (cad.entity.CreateEntityResponse);
+    rpc DrawArc(DrawArcRequest) returns (cad.entity.CreateEntityResponse);
+    rpc DrawRectangle(DrawRectangleRequest) returns (cad.entity.CreateEntityResponse);
+    rpc DrawPolygon(DrawPolygonRequest) returns (cad.entity.CreateEntityResponse);
+}
+
+// Convenience drawing requests
+message DrawLineRequest {
+    string document_id = 1;
+    cad.geometry.Point start = 2;
+    cad.geometry.Point end = 3;
+    optional string layer_id = 4;
+    map<string, string> properties = 5;
+}
+
+message DrawCircleRequest {
+    string document_id = 1;
+    cad.geometry.Point center = 2;
+    double radius = 3;
+    optional string layer_id = 4;
+    map<string, string> properties = 5;
+}
+
+message DrawArcRequest {
+    string document_id = 1;
+    cad.geometry.Point center = 2;
+    double radius = 3;
+    double start_angle = 4;
+    double end_angle = 5;
+    optional string layer_id = 6;
+    map<string, string> properties = 7;
+}
+
+message DrawRectangleRequest {
+    string document_id = 1;
+    cad.geometry.Point corner1 = 2;
+    cad.geometry.Point corner2 = 3;
+    optional string layer_id = 4;
+    map<string, string> properties = 5;
+}
+
+message DrawPolygonRequest {
+    string document_id = 1;
+    repeated cad.geometry.Point vertices = 2;
+    bool closed = 3;
+    optional string layer_id = 4;
+    map<string, string> properties = 5;
+}
+
+// Error handling
+message ErrorInfo {
+    int32 code = 1;
+    string message = 2;
+    string details = 3;
+    map<string, string> metadata = 4;
+}

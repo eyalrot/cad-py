@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package cad.layer;
+
+import "geometry.proto";
+
+// Layer definition
+message Layer {
+    string id = 1;
+    string name = 2;
+    cad.geometry.Color color = 3;
+    cad.geometry.LineType line_type = 4;
+    double line_weight = 5;
+    bool visible = 6;
+    bool locked = 7;
+    bool printable = 8;
+    bool frozen = 9;
+    string description = 10;
+    map<string, string> properties = 11;
+    string created_at = 12;
+    string modified_at = 13;
+}
+
+// Layer operations
+message CreateLayerRequest {
+    string document_id = 1;
+    string name = 2;
+    cad.geometry.Color color = 3;
+    cad.geometry.LineType line_type = 4;
+    double line_weight = 5;
+}
+
+message CreateLayerResponse {
+    Layer layer = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message UpdateLayerRequest {
+    string document_id = 1;
+    string layer_id = 2;
+    optional string name = 3;
+    optional cad.geometry.Color color = 4;
+    optional cad.geometry.LineType line_type = 5;
+    optional double line_weight = 6;
+    optional bool visible = 7;
+    optional bool locked = 8;
+    optional bool printable = 9;
+    optional bool frozen = 10;
+    optional string description = 11;
+    map<string, string> properties = 12;
+}
+
+message UpdateLayerResponse {
+    Layer layer = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message DeleteLayerRequest {
+    string document_id = 1;
+    string layer_id = 2;
+}
+
+message DeleteLayerResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message GetLayerRequest {
+    string document_id = 1;
+    string layer_id = 2;
+}
+
+message GetLayerResponse {
+    Layer layer = 1;
+    bool found = 2;
+    string error_message = 3;
+}
+
+message ListLayersRequest {
+    string document_id = 1;
+}
+
+message ListLayersResponse {
+    repeated Layer layers = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message SetCurrentLayerRequest {
+    string document_id = 1;
+    string layer_id = 2;
+}
+
+message SetCurrentLayerResponse {
+    bool success = 1;
+    string error_message = 2;
+}

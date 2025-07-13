@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package cad.geometry;
+
+// Basic geometric types
+message Point {
+    double x = 1;
+    double y = 2;
+}
+
+message Vector {
+    double x = 1;
+    double y = 2;
+}
+
+message BoundingBox {
+    Point min = 1;
+    Point max = 2;
+}
+
+message Color {
+    int32 red = 1;
+    int32 green = 2;
+    int32 blue = 3;
+    int32 alpha = 4;
+}
+
+enum LineType {
+    CONTINUOUS = 0;
+    DASHED = 1;
+    DOTTED = 2;
+    DASH_DOT = 3;
+    DASH_DOT_DOT = 4;
+    CENTER = 5;
+    PHANTOM = 6;
+    HIDDEN = 7;
+}
+
+// Geometric entities
+message LineGeometry {
+    Point start = 1;
+    Point end = 2;
+}
+
+message CircleGeometry {
+    Point center = 1;
+    double radius = 2;
+}
+
+message ArcGeometry {
+    Point center = 1;
+    double radius = 2;
+    double start_angle = 3;
+    double end_angle = 4;
+}
+
+message RectangleGeometry {
+    Point corner1 = 1;
+    Point corner2 = 2;
+}
+
+message PolygonGeometry {
+    repeated Point vertices = 1;
+    bool closed = 2;
+}
+
+// Entity geometry union
+message EntityGeometry {
+    oneof geometry {
+        LineGeometry line = 1;
+        CircleGeometry circle = 2;
+        ArcGeometry arc = 3;
+        RectangleGeometry rectangle = 4;
+        PolygonGeometry polygon = 5;
+    }
+}
