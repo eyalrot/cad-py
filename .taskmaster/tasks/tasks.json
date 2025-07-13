@@ -1,0 +1,358 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Development Environment and Project Structure",
+        "description": "Initialize the project repository with proper structure for both Python backend and Qt6 client, configure development tools, and set up CI/CD pipeline",
+        "details": "Create project directories following the specified architecture:\n- `/backend/` for Python microservice with subdirectories for api/, core/, services/, models/, utils/\n- `/qt_client/` for Qt6 desktop application with ui/, graphics/, core/, utils/\n- Setup virtual environments for both components\n- Configure .gitignore, pre-commit hooks, and linting rules (black, flake8, mypy)\n- Create Docker configurations for backend service\n- Setup GitHub Actions for CI/CD with test runners",
+        "testStrategy": "Verify project structure matches specification, ensure all development tools are properly configured, test that both backend and client environments can be activated and dependencies installed",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Core Geometry Engine",
+        "description": "Create the fundamental geometry classes including Point, Vector, Line, Circle, Arc with mathematical operations and intersection algorithms",
+        "details": "Implement in `/backend/core/geometry/`:\n```python\n# base.py\nclass Point2D:\n    def __init__(self, x: float, y: float)\n    def distance_to(self, other: Point2D) -> float\n    def translate(self, dx: float, dy: float) -> Point2D\n\nclass Vector2D:\n    def __init__(self, x: float, y: float)\n    def magnitude(self) -> float\n    def normalize(self) -> Vector2D\n    def dot(self, other: Vector2D) -> float\n    def cross(self, other: Vector2D) -> float\n\n# line.py\nclass Line:\n    def __init__(self, start: Point2D, end: Point2D)\n    def length(self) -> float\n    def midpoint(self) -> Point2D\n    def intersection(self, other: Line) -> Optional[Point2D]\n    def distance_to_point(self, point: Point2D) -> float\n\n# circle.py\nclass Circle:\n    def __init__(self, center: Point2D, radius: float)\n    def circumference(self) -> float\n    def area(self) -> float\n    def contains_point(self, point: Point2D) -> bool\n    def intersection_with_line(self, line: Line) -> List[Point2D]\n```\nUse NumPy for efficient calculations, implement bounding box computation for all entities",
+        "testStrategy": "Create comprehensive unit tests using pytest for all geometry operations including edge cases (parallel lines, tangent circles, etc.), test intersection algorithms with known results, benchmark performance with large datasets",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "in-progress",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Create Document Model and Entity Management",
+        "description": "Implement the document structure with entity management, layer system, and property handling including serialization",
+        "details": "Create document model in `/backend/models/`:\n```python\n# document.py\nclass CADDocument:\n    def __init__(self, name: str)\n    def add_entity(self, entity: BaseEntity) -> str  # returns entity_id\n    def remove_entity(self, entity_id: str) -> bool\n    def get_entity(self, entity_id: str) -> Optional[BaseEntity]\n    def query_entities(self, filter: EntityFilter) -> List[BaseEntity]\n    \n# entity.py\nclass BaseEntity(ABC):\n    id: str\n    layer_id: str\n    properties: Dict[str, Any]\n    def serialize(self) -> Dict\n    def deserialize(cls, data: Dict) -> BaseEntity\n\n# layer.py  \nclass Layer:\n    def __init__(self, name: str, color: Color, line_type: LineType)\n    locked: bool = False\n    visible: bool = True\n```\nImplement JSON and binary serialization formats, use UUID for entity IDs",
+        "testStrategy": "Test CRUD operations on entities, verify serialization/deserialization preserves all properties, test document with 10000+ entities for performance, ensure layer operations work correctly",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Setup gRPC API Service Definition",
+        "description": "Define gRPC service contracts and implement basic API endpoints for document operations and drawing commands",
+        "details": "Create protobuf definitions in `/backend/api/proto/`:\n```protobuf\n// cad_service.proto\nservice CADService {\n    rpc CreateDocument(CreateDocumentRequest) returns (Document);\n    rpc OpenDocument(OpenDocumentRequest) returns (Document);\n    rpc SaveDocument(SaveDocumentRequest) returns (SaveResult);\n    rpc DrawLine(DrawLineRequest) returns (Entity);\n    rpc DrawCircle(DrawCircleRequest) returns (Entity);\n    rpc QueryEntities(QueryRequest) returns (stream Entity);\n    rpc UpdateEntity(UpdateEntityRequest) returns (Entity);\n    rpc DeleteEntity(DeleteEntityRequest) returns (DeleteResult);\n}\n\nmessage Point {\n    double x = 1;\n    double y = 2;\n}\n\nmessage DrawLineRequest {\n    string document_id = 1;\n    Point start = 2;\n    Point end = 3;\n    string layer_id = 4;\n}\n```\nImplement service in Python with proper error handling and validation",
+        "testStrategy": "Test all RPC endpoints with grpc testing tools, verify error handling for invalid requests, test streaming performance for large entity queries, ensure thread safety",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Build Qt6 Main Application Shell",
+        "description": "Create the main Qt6 application window with menu system, toolbar, and basic layout including status bar",
+        "details": "Implement main window in `/qt_client/ui/main_window.py`:\n```python\nclass CADMainWindow(QMainWindow):\n    def __init__(self):\n        super().__init__()\n        self.setWindowTitle(\"PyCAD 2D Professional\")\n        self.setGeometry(100, 100, 1400, 900)\n        \n        # Setup components\n        self._setup_ribbon()  # Or traditional menu/toolbar\n        self._setup_canvas()\n        self._setup_panels()\n        self._setup_statusbar()\n        \n        # Setup coordinate display in status bar\n        self.coord_label = QLabel(\"X: 0.0000  Y: 0.0000\")\n        self.statusBar().addPermanentWidget(self.coord_label)\n        \n    def _setup_ribbon(self):\n        # Create ribbon with tabs: Home, Modify, Annotate, View\n        self.ribbon = RibbonWidget()\n        self.setMenuWidget(self.ribbon)\n```\nImplement modern ribbon interface or traditional menu/toolbar based on user preference",
+        "testStrategy": "Verify window displays correctly at different resolutions, test all menu items are accessible, ensure status bar updates work, test window state persistence",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement gRPC Client Integration",
+        "description": "Create async gRPC client wrapper for Qt6 application with proper error handling and connection management",
+        "details": "Create API client in `/qt_client/core/api_client.py`:\n```python\nclass CADAPIClient(QObject):\n    # Signals for async operations\n    document_loaded = pyqtSignal(dict)\n    entity_created = pyqtSignal(dict)\n    error_occurred = pyqtSignal(str)\n    \n    def __init__(self, server_address: str = \"localhost:50051\"):\n        self.channel = grpc.aio.insecure_channel(server_address)\n        self.stub = CADServiceStub(self.channel)\n        \n    async def create_document(self, name: str) -> Document:\n        try:\n            response = await self.stub.CreateDocument(\n                CreateDocumentRequest(name=name)\n            )\n            return response\n        except grpc.RpcError as e:\n            self.error_occurred.emit(str(e))\n            \n    # Implement connection retry logic\n    # Add request queuing for offline mode\n```\nUse QThreadPool for async operations to avoid blocking UI",
+        "testStrategy": "Test connection/disconnection scenarios, verify async operations don't block UI, test error propagation, simulate network failures and verify graceful handling",
+        "priority": "high",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Create Basic Drawing Canvas with QGraphicsView",
+        "description": "Implement the main drawing canvas using QGraphicsView with pan, zoom, and coordinate system setup",
+        "details": "Implement canvas in `/qt_client/ui/canvas/`:\n```python\nclass CADView(QGraphicsView):\n    mouse_moved = pyqtSignal(QPointF)\n    zoom_changed = pyqtSignal(float)\n    \n    def __init__(self, scene):\n        super().__init__(scene)\n        self.setRenderHint(QPainter.RenderHint.Antialiasing)\n        self.setViewport(QOpenGLWidget())  # Hardware acceleration\n        self.setMouseTracking(True)\n        \n        # Setup coordinate system (Y-up for CAD)\n        self.scale(1, -1)\n        \n    def wheelEvent(self, event: QWheelEvent):\n        # Implement zoom at cursor position\n        scale_factor = 1.15\n        old_pos = self.mapToScene(event.position().toPoint())\n        \n        if event.angleDelta().y() > 0:\n            self.scale(scale_factor, scale_factor)\n        else:\n            self.scale(1/scale_factor, 1/scale_factor)\n            \n        new_pos = self.mapToScene(event.position().toPoint())\n        delta = new_pos - old_pos\n        self.translate(delta.x(), delta.y())\n```\nImplement smooth pan with middle mouse button, add zoom limits",
+        "testStrategy": "Test zoom maintains cursor position, verify pan is smooth at all zoom levels, test coordinate system orientation, benchmark performance with complex scenes",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Line Drawing Tool",
+        "description": "Create interactive line drawing tool with preview, orthogonal mode, and polyline support",
+        "details": "Create line tool in `/qt_client/graphics/tools/line_tool.py`:\n```python\nclass LineTool(BaseTool):\n    def __init__(self, scene, api_client):\n        self.points = []  # For polyline mode\n        self.preview_line = None\n        self.ortho_mode = False\n        \n    def on_mouse_press(self, event):\n        point = self.snap_point(event.scenePos())\n        \n        if self.mode == LineMode.SINGLE:\n            if len(self.points) == 0:\n                self.points.append(point)\n            else:\n                # Create line via API\n                asyncio.create_task(\n                    self.api.draw_line(\n                        start=self.points[0],\n                        end=point\n                    )\n                )\n                self.reset()\n                \n    def on_mouse_move(self, event):\n        if self.points:\n            current = self.snap_point(event.scenePos())\n            \n            if self.ortho_mode:\n                current = self.constrain_orthogonal(\n                    self.points[-1], current\n                )\n                \n            # Update preview\n            if self.preview_line:\n                self.scene.removeItem(self.preview_line)\n            \n            self.preview_line = self.scene.addLine(\n                QLineF(self.points[-1], current)\n            )\n```",
+        "testStrategy": "Test single line and polyline modes, verify orthogonal constraints work correctly, test preview updates smoothly, ensure API calls complete successfully",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Circle and Arc Drawing Tools",
+        "description": "Create circle tools with multiple input methods (center-radius, 2-point, 3-point) and arc drawing capabilities",
+        "details": "Implement circle/arc tools in `/qt_client/graphics/tools/`:\n```python\nclass CircleTool(BaseTool):\n    def __init__(self, scene, api_client):\n        self.mode = CircleMode.CENTER_RADIUS\n        self.center = None\n        self.preview_circle = None\n        \n    def on_mouse_press(self, event):\n        point = self.snap_point(event.scenePos())\n        \n        if self.mode == CircleMode.CENTER_RADIUS:\n            if not self.center:\n                self.center = point\n                # Show center marker\n            else:\n                radius = self.center.distance_to(point)\n                asyncio.create_task(\n                    self.api.draw_circle(self.center, radius)\n                )\n                self.reset()\n                \n        elif self.mode == CircleMode.TWO_POINT:\n            # Implement diameter mode\n            pass\n            \n        elif self.mode == CircleMode.THREE_POINT:\n            # Calculate circle through 3 points\n            pass\n            \nclass ArcTool(BaseTool):\n    # Similar implementation for arcs\n    # Support 3-point arc and start-center-end modes\n```",
+        "testStrategy": "Test all circle creation modes produce correct geometry, verify arc angles are calculated correctly, test preview updates for all modes, ensure tangent circles work",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Snap System with Visual Feedback",
+        "description": "Create comprehensive object snap system with endpoint, midpoint, center, intersection detection and visual indicators",
+        "details": "Create snap engine in `/qt_client/core/snap_engine.py`:\n```python\nclass SnapEngine:\n    def __init__(self, scene, tolerance=10):\n        self.scene = scene\n        self.tolerance = tolerance  # pixels\n        self.active_snaps = {\n            SnapType.ENDPOINT: True,\n            SnapType.MIDPOINT: True,\n            SnapType.CENTER: True,\n            SnapType.INTERSECTION: True,\n            SnapType.PERPENDICULAR: True,\n            SnapType.TANGENT: True\n        }\n        self.snap_marker = SnapMarker()  # Visual indicator\n        \n    def find_snap_point(self, cursor_pos: QPointF) -> Optional[SnapPoint]:\n        # Convert to scene coordinates\n        search_rect = QRectF(\n            cursor_pos.x() - self.tolerance,\n            cursor_pos.y() - self.tolerance,\n            self.tolerance * 2,\n            self.tolerance * 2\n        )\n        \n        # Get entities in range\n        items = self.scene.items(search_rect)\n        \n        snap_points = []\n        for item in items:\n            if isinstance(item, LineItem) and self.active_snaps[SnapType.ENDPOINT]:\n                # Check endpoints\n                snap_points.extend([\n                    SnapPoint(item.line().p1(), SnapType.ENDPOINT),\n                    SnapPoint(item.line().p2(), SnapType.ENDPOINT)\n                ])\n            if self.active_snaps[SnapType.MIDPOINT]:\n                # Add midpoint\n                mid = item.line().center()\n                snap_points.append(SnapPoint(mid, SnapType.MIDPOINT))\n                \n        # Return closest snap point\n        return min(snap_points, key=lambda s: s.distance_to(cursor_pos))\n```",
+        "testStrategy": "Test snap detection accuracy at various zoom levels, verify snap priority system works correctly, test performance with many entities, ensure visual feedback is clear",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Implement Grid System and Rulers",
+        "description": "Create configurable grid display with snap-to-grid functionality and ruler guides for precision drawing",
+        "details": "Implement grid in `/qt_client/ui/canvas/grid_overlay.py`:\n```python\nclass GridOverlay:\n    def __init__(self, view):\n        self.view = view\n        self.grid_size = 10.0  # units\n        self.major_interval = 5  # Every 5th line is major\n        self.visible = True\n        \n    def paint(self, painter: QPainter, rect: QRectF):\n        if not self.visible:\n            return\n            \n        # Calculate visible grid range\n        left = math.floor(rect.left() / self.grid_size) * self.grid_size\n        top = math.floor(rect.top() / self.grid_size) * self.grid_size\n        \n        # Draw grid lines\n        painter.setPen(QPen(QColor(50, 50, 50), 0.5))\n        \n        x = left\n        while x <= rect.right():\n            if int(x / self.grid_size) % self.major_interval == 0:\n                painter.setPen(QPen(QColor(70, 70, 70), 1))\n            painter.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()))\n            x += self.grid_size\n            \n    def snap_to_grid(self, point: QPointF) -> QPointF:\n        return QPointF(\n            round(point.x() / self.grid_size) * self.grid_size,\n            round(point.y() / self.grid_size) * self.grid_size\n        )\n```",
+        "testStrategy": "Test grid displays correctly at all zoom levels, verify snap-to-grid accuracy, test performance impact of grid rendering, ensure grid spacing is configurable",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement Selection System with Multiple Modes",
+        "description": "Create selection tools supporting single pick, window, crossing selection with visual feedback and selection filters",
+        "details": "Create selection manager in `/qt_client/core/selection_manager.py`:\n```python\nclass SelectionManager(QObject):\n    selection_changed = pyqtSignal(list)\n    \n    def __init__(self):\n        self.selected_items = set()\n        self.selection_mode = SelectionMode.SINGLE\n        self.selection_filter = None\n        \n    def pick_select(self, point: QPointF, modifiers=None):\n        item = self.scene.itemAt(point)\n        \n        if modifiers & Qt.ControlModifier:\n            # Toggle selection\n            if item in self.selected_items:\n                self.deselect(item)\n            else:\n                self.add_to_selection(item)\n        else:\n            # Replace selection\n            self.clear_selection()\n            self.add_to_selection(item)\n            \n    def window_select(self, rect: QRectF, crossing=False):\n        if crossing:\n            # Select items intersecting rect\n            items = self.scene.items(rect, Qt.IntersectsItemBoundingRect)\n        else:\n            # Select items completely inside\n            items = self.scene.items(rect, Qt.ContainsItemBoundingRect)\n            \n        self.clear_selection()\n        for item in items:\n            if self.passes_filter(item):\n                self.add_to_selection(item)\n```",
+        "testStrategy": "Test all selection modes work correctly, verify Ctrl+click toggles selection, test selection filters by type/layer, ensure selection highlighting is visible",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Implement Basic Modification Tools",
+        "description": "Create move, copy, rotate, scale, and mirror tools with interactive preview and precise input options",
+        "details": "Implement modification tools in `/qt_client/graphics/tools/`:\n```python\nclass MoveTool(BaseTool):\n    def __init__(self, scene, api_client, selection_manager):\n        self.selection = selection_manager\n        self.base_point = None\n        self.preview_items = []\n        \n    def activate(self):\n        if not self.selection.selected_items:\n            self.show_message(\"Select objects to move\")\n            return False\n            \n    def on_mouse_press(self, event):\n        if not self.base_point:\n            self.base_point = self.snap_point(event.scenePos())\n        else:\n            dest_point = self.snap_point(event.scenePos())\n            delta = dest_point - self.base_point\n            \n            # Send move command to API\n            entity_ids = [item.entity_id for item in self.selection.selected_items]\n            asyncio.create_task(\n                self.api.move_entities(entity_ids, delta.x(), delta.y())\n            )\n            self.finish()\n            \nclass RotateTool(BaseTool):\n    # Similar pattern for rotate with angle input\n    # Support reference point selection\n    # Show dynamic angle in status bar\n    \nclass ScaleTool(BaseTool):\n    # Support uniform and non-uniform scaling\n    # Allow base point selection\n```",
+        "testStrategy": "Test move maintains exact distances, verify rotate preserves geometry, test scale with different base points, ensure preview updates smoothly during operation",
+        "priority": "medium",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Implement Advanced Modification Tools",
+        "description": "Create trim, extend, offset, fillet, and chamfer tools with appropriate geometric calculations",
+        "details": "Implement advanced tools in `/backend/services/geometry_operations.py`:\n```python\nclass GeometryOperations:\n    @staticmethod\n    def trim_entity(entity: BaseEntity, boundary: BaseEntity, pick_point: Point2D):\n        \"\"\"Trim entity to boundary at side indicated by pick point\"\"\"\n        intersections = entity.intersect(boundary)\n        if not intersections:\n            return None\n            \n        # Determine which portion to keep based on pick point\n        # Return trimmed entity\n        \n    @staticmethod\n    def offset_curve(entity: BaseEntity, distance: float, side: Point2D):\n        \"\"\"Create parallel curve at specified distance\"\"\"\n        if isinstance(entity, Line):\n            # Calculate perpendicular vector\n            direction = entity.direction().perpendicular()\n            # Determine side based on pick point\n            # Return new line\n            \n        elif isinstance(entity, Arc):\n            # Adjust radius based on side\n            # Return new arc\n            \n    @staticmethod\n    def fillet_corner(entity1: Line, entity2: Line, radius: float):\n        \"\"\"Create fillet arc between two lines\"\"\"\n        # Calculate intersection point\n        # Find tangent points\n        # Create fillet arc\n        # Trim original lines\n```",
+        "testStrategy": "Test trim with various entity types and boundaries, verify offset maintains correct distance, test fillet with different angles, ensure all operations handle edge cases",
+        "priority": "medium",
+        "dependencies": [
+          13
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Implement Layer Management System",
+        "description": "Create layer panel UI with layer creation, property editing, visibility control, and current layer management",
+        "details": "Create layer panel in `/qt_client/ui/panels/layers_panel.py`:\n```python\nclass LayersPanel(QDockWidget):\n    current_layer_changed = pyqtSignal(str)\n    \n    def __init__(self, api_client):\n        super().__init__(\"Layers\")\n        self.api = api_client\n        self.setup_ui()\n        \n    def setup_ui(self):\n        # Layer list with custom delegate for color/linetype\n        self.layer_tree = QTreeWidget()\n        self.layer_tree.setHeaderLabels([\"Name\", \"Visible\", \"Locked\", \"Color\"])\n        \n        # Toolbar for layer operations\n        toolbar = QToolBar()\n        toolbar.addAction(\"New Layer\", self.new_layer)\n        toolbar.addAction(\"Delete Layer\", self.delete_layer)\n        toolbar.addAction(\"Layer Properties\", self.edit_properties)\n        \n    def new_layer(self):\n        dialog = NewLayerDialog(self)\n        if dialog.exec():\n            layer_data = dialog.get_layer_data()\n            asyncio.create_task(\n                self.api.create_layer(layer_data)\n            )\n            \n    def toggle_visibility(self, layer_id: str, visible: bool):\n        # Update UI immediately\n        # Send update to backend\n        asyncio.create_task(\n            self.api.update_layer(layer_id, {\"visible\": visible})\n        )\n```",
+        "testStrategy": "Test layer CRUD operations work correctly, verify visibility toggles affect display immediately, test current layer switches properly, ensure layer properties persist",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Implement Command Pattern and Undo/Redo",
+        "description": "Create command pattern infrastructure for undo/redo functionality with memory management and history panel",
+        "details": "Implement command system in `/qt_client/core/command_manager.py`:\n```python\nclass Command(ABC):\n    @abstractmethod\n    def execute(self) -> bool:\n        pass\n        \n    @abstractmethod\n    def undo(self) -> bool:\n        pass\n        \n    @abstractmethod\n    def get_description(self) -> str:\n        pass\n        \nclass DrawLineCommand(Command):\n    def __init__(self, api_client, start, end, layer_id):\n        self.api = api_client\n        self.start = start\n        self.end = end\n        self.layer_id = layer_id\n        self.entity_id = None\n        \n    async def execute(self):\n        result = await self.api.draw_line(self.start, self.end, self.layer_id)\n        self.entity_id = result.entity_id\n        return True\n        \n    async def undo(self):\n        if self.entity_id:\n            await self.api.delete_entity(self.entity_id)\n            return True\n        return False\n        \nclass CommandManager:\n    def __init__(self, max_history=100):\n        self.history = deque(maxlen=max_history)\n        self.redo_stack = []\n        \n    async def execute_command(self, command: Command):\n        if await command.execute():\n            self.history.append(command)\n            self.redo_stack.clear()\n            return True\n        return False\n```",
+        "testStrategy": "Test undo/redo for all command types, verify memory limits are respected, test command descriptions in history panel, ensure async commands complete properly",
+        "priority": "high",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Implement Linear Dimensioning System",
+        "description": "Create horizontal, vertical, aligned, and continuous dimension tools with dimension style management",
+        "details": "Create dimension tools in `/qt_client/graphics/tools/dimension_tool.py`:\n```python\nclass DimensionStyle:\n    def __init__(self):\n        self.text_height = 2.5\n        self.arrow_size = 2.5\n        self.extension_offset = 1.25\n        self.dimension_offset = 10.0\n        self.precision = 4\n        self.unit_format = UnitFormat.DECIMAL\n        \nclass LinearDimensionTool(BaseTool):\n    def __init__(self, scene, api_client):\n        self.dim_type = DimensionType.HORIZONTAL\n        self.points = []  # [point1, point2, dimension_line_position]\n        self.style = DimensionStyle()\n        \n    def on_mouse_press(self, event):\n        point = self.snap_point(event.scenePos())\n        \n        if len(self.points) < 2:\n            # Select dimension points\n            self.points.append(point)\n            if len(self.points) == 2:\n                # Show preview dimension\n                self.update_preview()\n        else:\n            # Place dimension line\n            dim_line_pos = point\n            \n            # Calculate dimension value\n            if self.dim_type == DimensionType.HORIZONTAL:\n                value = abs(self.points[1].x() - self.points[0].x())\n            elif self.dim_type == DimensionType.VERTICAL:\n                value = abs(self.points[1].y() - self.points[0].y())\n            else:  # ALIGNED\n                value = self.points[0].distance_to(self.points[1])\n                \n            # Create dimension entity\n            asyncio.create_task(\n                self.api.create_dimension(\n                    self.dim_type,\n                    self.points,\n                    dim_line_pos,\n                    self.style\n                )\n            )\n```",
+        "testStrategy": "Test dimension accuracy matches actual geometry, verify dimension updates when geometry changes, test different unit formats and precision, ensure dimension styles apply correctly",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Implement Angular and Radial Dimensions",
+        "description": "Create angular, radius, diameter, and arc length dimension tools with proper annotation placement",
+        "details": "Extend dimension tools for angular/radial dimensions:\n```python\nclass AngularDimensionTool(BaseTool):\n    def create_angular_dimension(self, line1: Line, line2: Line, arc_point: Point2D):\n        # Calculate angle between lines\n        angle = line1.angle_to(line2)\n        \n        # Find intersection point (vertex)\n        vertex = line1.intersection(line2)\n        \n        # Create dimension arc\n        # Position text at arc midpoint\n        \nclass RadialDimensionTool(BaseTool):\n    def on_entity_selected(self, entity):\n        if isinstance(entity, Circle):\n            # Show radius dimension\n            # Allow user to position text\n        elif isinstance(entity, Arc):\n            # Similar for arc radius\n            \nclass DiameterDimensionTool(BaseTool):\n    # Create diameter dimension across circle\n    # Show ⌀ symbol with value\n```",
+        "testStrategy": "Test angle calculation accuracy, verify dimension placement doesn't overlap geometry, test symbol rendering (diameter, degree), ensure dimensions are associative",
+        "priority": "medium",
+        "dependencies": [
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Implement Text Annotation Tools",
+        "description": "Create single-line and multi-line text tools with formatting options and text style management",
+        "details": "Create text tools in `/qt_client/graphics/tools/text_tool.py`:\n```python\nclass TextStyle:\n    def __init__(self):\n        self.font_family = \"Arial\"\n        self.font_size = 2.5  # Drawing units\n        self.bold = False\n        self.italic = False\n        self.alignment = TextAlignment.LEFT\n        \nclass TextTool(BaseTool):\n    def __init__(self, scene, api_client):\n        self.text_editor = None\n        self.insertion_point = None\n        self.style = TextStyle()\n        \n    def on_mouse_press(self, event):\n        self.insertion_point = self.snap_point(event.scenePos())\n        \n        # Create in-place text editor\n        self.text_editor = InPlaceTextEdit()\n        self.text_editor.setPos(self.insertion_point)\n        self.scene.addWidget(self.text_editor)\n        \n        self.text_editor.editing_finished.connect(self.create_text)\n        self.text_editor.setFocus()\n        \n    def create_text(self):\n        text_content = self.text_editor.toPlainText()\n        if text_content:\n            asyncio.create_task(\n                self.api.create_text(\n                    content=text_content,\n                    position=self.insertion_point,\n                    style=self.style\n                )\n            )\n            \nclass MultilineTextTool(TextTool):\n    # Extended version with paragraph support\n    # Rich text formatting\n    # Text frame with word wrap\n```",
+        "testStrategy": "Test text renders at correct size regardless of zoom, verify special characters and Unicode work, test text alignment options, ensure in-place editing is intuitive",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Implement Table Creation and BOM Tools",
+        "description": "Create table tools for bills of materials, schedules, and data extraction with calculation support",
+        "details": "Implement table system in `/qt_client/ui/dialogs/table_dialog.py`:\n```python\nclass TableDialog(QDialog):\n    def __init__(self, api_client):\n        self.table_widget = QTableWidget()\n        self.setup_ui()\n        \n    def create_bom_table(self):\n        # Query all blocks/components\n        entities = await self.api.query_entities(\n            filter={\"type\": \"block_reference\"}\n        )\n        \n        # Count occurrences\n        bom_data = {}\n        for entity in entities:\n            block_name = entity.block_name\n            if block_name in bom_data:\n                bom_data[block_name][\"count\"] += 1\n            else:\n                bom_data[block_name] = {\n                    \"count\": 1,\n                    \"description\": entity.description,\n                    \"part_number\": entity.part_number\n                }\n                \n        # Populate table\n        self.table_widget.setRowCount(len(bom_data))\n        for row, (name, data) in enumerate(bom_data.items()):\n            self.table_widget.setItem(row, 0, QTableWidgetItem(name))\n            self.table_widget.setItem(row, 1, QTableWidgetItem(str(data[\"count\"])))\n            \n    def export_to_csv(self):\n        # Export table data to CSV\n```",
+        "testStrategy": "Test BOM counts are accurate, verify table updates when drawing changes, test CSV export formatting, ensure formulas calculate correctly",
+        "priority": "low",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Implement DXF Import/Export Engine",
+        "description": "Create DXF parser and writer supporting AutoCAD R12-2018 formats with entity mapping and layer preservation",
+        "details": "Implement DXF handling in `/backend/services/dxf_service.py`:\n```python\nimport ezdxf\n\nclass DXFService:\n    def __init__(self):\n        self.version_map = {\n            \"R12\": \"AC1009\",\n            \"R2000\": \"AC1015\",\n            \"R2010\": \"AC1024\",\n            \"R2018\": \"AC1032\"\n        }\n        \n    def import_dxf(self, file_path: str) -> CADDocument:\n        doc = ezdxf.readfile(file_path)\n        cad_doc = CADDocument(name=Path(file_path).stem)\n        \n        # Import layers\n        for layer in doc.layers:\n            cad_doc.add_layer(Layer(\n                name=layer.dxf.name,\n                color=Color.from_aci(layer.dxf.color),\n                line_type=layer.dxf.linetype\n            ))\n            \n        # Import entities\n        msp = doc.modelspace()\n        for entity in msp:\n            if entity.dxftype() == \"LINE\":\n                cad_doc.add_entity(Line(\n                    start=Point2D(entity.dxf.start.x, entity.dxf.start.y),\n                    end=Point2D(entity.dxf.end.x, entity.dxf.end.y),\n                    layer=entity.dxf.layer\n                ))\n            elif entity.dxftype() == \"CIRCLE\":\n                # Map circle entity\n            elif entity.dxftype() == \"ARC\":\n                # Map arc entity\n                \n        return cad_doc\n        \n    def export_dxf(self, document: CADDocument, file_path: str, version=\"R2010\"):\n        doc = ezdxf.new(self.version_map[version])\n        msp = doc.modelspace()\n        \n        # Export layers\n        for layer in document.layers:\n            doc.layers.new(\n                name=layer.name,\n                dxfattribs={\n                    \"color\": layer.color.to_aci(),\n                    \"linetype\": layer.line_type\n                }\n            )\n            \n        # Export entities\n        for entity in document.entities:\n            if isinstance(entity, Line):\n                msp.add_line(\n                    start=(entity.start.x, entity.start.y),\n                    end=(entity.end.x, entity.end.y),\n                    dxfattribs={\"layer\": entity.layer}\n                )\n```",
+        "testStrategy": "Test round-trip import/export preserves all data, verify compatibility with AutoCAD, test large files performance, ensure unsupported entities are handled gracefully",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Implement SVG and PDF Export",
+        "description": "Create vector format exporters with layer support, proper scaling, and print settings",
+        "details": "Create export service in `/backend/services/export_service.py`:\n```python\nfrom reportlab.pdfgen import canvas\nfrom reportlab.lib.pagesizes import letter, A4\nimport svgwrite\n\nclass ExportService:\n    def export_to_svg(self, document: CADDocument, file_path: str, options: dict):\n        # Calculate bounds\n        bounds = self.calculate_bounds(document)\n        \n        # Create SVG\n        dwg = svgwrite.Drawing(\n            file_path,\n            size=(f\"{bounds.width}mm\", f\"{bounds.height}mm\"),\n            viewBox=f\"{bounds.min_x} {bounds.min_y} {bounds.width} {bounds.height}\"\n        )\n        \n        # Group by layers\n        for layer in document.layers:\n            if not layer.visible:\n                continue\n                \n            g = dwg.g(id=layer.name, stroke=layer.color.to_hex())\n            \n            for entity in document.get_entities_on_layer(layer.id):\n                if isinstance(entity, Line):\n                    g.add(dwg.line(\n                        start=(entity.start.x, entity.start.y),\n                        end=(entity.end.x, entity.end.y)\n                    ))\n                elif isinstance(entity, Circle):\n                    g.add(dwg.circle(\n                        center=(entity.center.x, entity.center.y),\n                        r=entity.radius\n                    ))\n                    \n            dwg.add(g)\n            \n        dwg.save()\n        \n    def export_to_pdf(self, document: CADDocument, file_path: str, options: dict):\n        # Setup page size and orientation\n        page_size = A4 if options.get(\"format\") == \"A4\" else letter\n        \n        c = canvas.Canvas(file_path, pagesize=page_size)\n        \n        # Calculate scale to fit\n        bounds = self.calculate_bounds(document)\n        scale = min(\n            page_size[0] / bounds.width,\n            page_size[1] / bounds.height\n        ) * 0.9  # 90% to leave margin\n        \n        # Transform to PDF coordinates\n        c.translate(page_size[0]/2, page_size[1]/2)\n        c.scale(scale, scale)\n        \n        # Draw entities\n        for entity in document.entities:\n            # Convert CAD entities to PDF paths\n            \n        c.save()\n```",
+        "testStrategy": "Test SVG opens correctly in browsers and Inkscape, verify PDF layers work in Adobe Reader, test page sizes and orientations, ensure line weights scale properly",
+        "priority": "medium",
+        "dependencies": [
+          21
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Implement Block System and Symbol Libraries",
+        "description": "Create block creation, editing, insertion tools with symbol library management and dynamic blocks",
+        "details": "Implement block system in `/backend/models/block.py` and UI in `/qt_client/ui/panels/blocks_panel.py`:\n```python\n# Backend block model\nclass Block:\n    def __init__(self, name: str, base_point: Point2D):\n        self.id = str(uuid.uuid4())\n        self.name = name\n        self.base_point = base_point\n        self.entities = []  # Entities in block definition\n        self.attributes = {}  # Dynamic attributes\n        \nclass BlockReference:\n    def __init__(self, block_id: str, insertion_point: Point2D):\n        self.block_id = block_id\n        self.insertion_point = insertion_point\n        self.scale = Vector2D(1, 1)\n        self.rotation = 0.0\n        self.attribute_values = {}  # Instance-specific values\n        \n# Frontend block panel\nclass BlocksPanel(QDockWidget):\n    def __init__(self, api_client):\n        self.library_tree = QTreeWidget()\n        self.setup_libraries()\n        \n    def setup_libraries(self):\n        # Load symbol libraries\n        libraries = {\n            \"Architectural\": [\"Door\", \"Window\", \"Stairs\"],\n            \"Electrical\": [\"Outlet\", \"Switch\", \"Light\"],\n            \"Mechanical\": [\"Bolt\", \"Nut\", \"Bearing\"]\n        }\n        \n    def create_block_from_selection(self):\n        # Get selected entities\n        # Prompt for block name and base point\n        # Create block definition\n        # Replace selection with block reference\n        \n    def insert_block(self, block_name: str):\n        # Start block insertion tool\n        # Allow rotation/scale during placement\n```",
+        "testStrategy": "Test block creation preserves entity relationships, verify block updates propagate to references, test nested blocks work correctly, ensure attributes update properly",
+        "priority": "medium",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Implement Constraint System and Solver",
+        "description": "Create geometric constraint system with visual feedback and constraint solver integration",
+        "details": "Implement constraints in `/backend/services/constraint_solver.py`:\n```python\nimport py_planarity  # Or similar constraint solver\n\nclass Constraint(ABC):\n    def __init__(self, entities: List[str]):\n        self.id = str(uuid.uuid4())\n        self.entities = entities\n        self.satisfied = False\n        \n    @abstractmethod\n    def evaluate(self) -> float:\n        \"\"\"Return error value, 0 if satisfied\"\"\"\n        pass\n        \nclass ParallelConstraint(Constraint):\n    def __init__(self, line1_id: str, line2_id: str):\n        super().__init__([line1_id, line2_id])\n        \n    def evaluate(self, line1: Line, line2: Line) -> float:\n        # Calculate angle between lines\n        angle = line1.angle_to(line2)\n        return min(angle, 180 - angle)  # Error in degrees\n        \nclass ConstraintSolver:\n    def __init__(self):\n        self.constraints = []\n        self.tolerance = 1e-6\n        \n    def add_constraint(self, constraint: Constraint):\n        self.constraints.append(constraint)\n        \n    def solve(self, entities: Dict[str, BaseEntity], max_iterations=100):\n        \"\"\"Solve constraints using iterative method\"\"\"\n        for _ in range(max_iterations):\n            total_error = 0\n            \n            for constraint in self.constraints:\n                error = constraint.evaluate(entities)\n                if error > self.tolerance:\n                    # Adjust entities to reduce error\n                    self.apply_correction(constraint, entities, error)\n                    \n                total_error += error\n                \n            if total_error < self.tolerance:\n                return True\n                \n        return False\n```",
+        "testStrategy": "Test constraint solver converges for common cases, verify over-constrained systems are detected, test constraint persistence, ensure visual feedback updates correctly",
+        "priority": "medium",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Performance Optimization and Testing",
+        "description": "Implement spatial indexing, caching, GPU acceleration, and comprehensive test suite with benchmarks",
+        "details": "Implement optimizations:\n```python\n# Spatial indexing in /backend/core/spatial_index.py\nfrom rtree import index\n\nclass SpatialIndex:\n    def __init__(self):\n        self.idx = index.Index()\n        self.entities = {}\n        \n    def insert(self, entity: BaseEntity):\n        bounds = entity.get_bounds()\n        self.idx.insert(\n            entity.id,\n            (bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y)\n        )\n        self.entities[entity.id] = entity\n        \n    def query_rect(self, rect: Bounds) -> List[BaseEntity]:\n        ids = self.idx.intersection(\n            (rect.min_x, rect.min_y, rect.max_x, rect.max_y)\n        )\n        return [self.entities[id] for id in ids]\n        \n# GPU acceleration for rendering\nclass GPURenderer:\n    def __init__(self):\n        self.vbo_cache = {}  # Vertex buffer objects\n        \n    def render_entities(self, entities: List[BaseEntity], viewport: QRectF):\n        # Batch entities by type and style\n        # Upload to GPU\n        # Render with OpenGL\n        \n# Comprehensive testing\ndef test_performance_large_drawing():\n    \"\"\"Test with 100k entities\"\"\"\n    doc = CADDocument(\"performance_test\")\n    \n    # Create grid of lines\n    for x in range(1000):\n        for y in range(100):\n            doc.add_entity(Line(\n                Point2D(x * 10, y * 10),\n                Point2D((x + 1) * 10, y * 10)\n            ))\n            \n    # Measure operations\n    start = time.time()\n    results = doc.query_entities(filter={\"type\": \"line\"})\n    query_time = time.time() - start\n    \n    assert query_time < 0.1  # Should be under 100ms\n    assert len(results) == 100000\n```",
+        "testStrategy": "Benchmark all major operations with large datasets, profile memory usage under load, test GPU rendering fallback, ensure 60 FPS with 10k visible entities",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-13T14:12:04.519Z",
+      "updated": "2025-07-13T14:25:34.046Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

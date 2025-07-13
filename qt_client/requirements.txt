@@ -1,0 +1,22 @@
+# Qt6 and UI
+PySide6==6.6.1
+PySide6-Addons==6.6.1
+PySide6-Essentials==6.6.1
+
+# gRPC client
+grpcio==1.59.3
+grpcio-tools==1.59.3
+protobuf==4.25.1
+
+# Math and geometry
+numpy==1.25.2
+scipy==1.11.4
+
+# Testing
+pytest==7.4.3
+pytest-qt==4.2.0
+
+# Development tools
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1

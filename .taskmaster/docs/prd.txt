@@ -1,0 +1,703 @@
+# Python 2D CAD System - Complete PRD & Architecture
+
+## Executive Summary
+
+A professional 2D CAD system consisting of a Python microservice backend and Qt6 desktop client, designed for technical drawing, engineering diagrams, and architectural drafting. The system follows a client-server architecture enabling future multi-platform support while maintaining high performance and professional CAD capabilities.
+
+## Product Vision
+
+Create a modern, extensible CAD platform that rivals established solutions like AutoCAD LT or DraftSight in 2D capabilities, while offering superior architecture for collaboration and customization. The system should feel familiar to CAD professionals while providing modern UI/UX and cloud-ready architecture.
+
+## Target Market
+
+### Primary Users
+- **Mechanical Engineers**: Creating technical drawings, part designs, assembly layouts
+- **Architects**: Floor plans, elevations, construction details
+- **Electrical Engineers**: Schematic diagrams, panel layouts, wiring diagrams
+- **Designers**: Precise 2D illustrations, patterns, templates
+
+### Use Cases
+1. Creating manufacturing drawings with precise dimensions
+2. Architectural floor plan design with standard symbols
+3. Electrical/plumbing schematic creation
+4. Converting hand sketches to precise technical drawings
+5. Collaborative design reviews with markup tools
+
+## Core Features
+
+### 1. Drawing Tools
+- **Basic Geometry**
+  - Lines (single, polyline, construction)
+  - Circles (center-radius, 2-point, 3-point, tangent)
+  - Arcs (3-point, start-center-end, tangent)
+  - Rectangles, polygons (3-12 sides)
+  - Ellipses and elliptical arcs
+
+- **Advanced Geometry**
+  - Bezier curves (cubic, quadratic)
+  - B-splines with control points
+  - Offset curves with variable distance
+  - Filleted and chamfered corners
+  - Hatching patterns (ANSI, ISO, custom)
+
+### 2. Precision & Constraints
+- **Snap System**
+  - Endpoint, midpoint, center, intersection
+  - Perpendicular, tangent, parallel
+  - Grid snap with configurable spacing
+  - Polar tracking (15°, 30°, 45°, custom)
+
+- **Geometric Constraints**
+  - Horizontal, vertical, parallel, perpendicular
+  - Coincident, concentric, equal
+  - Distance, angle, radius constraints
+  - Symmetric and fixed constraints
+
+### 3. Annotation & Documentation
+- **Dimensioning**
+  - Linear (horizontal, vertical, aligned)
+  - Angular, radial, diameter
+  - Ordinate and baseline dimensions
+  - Automatic dimension updates
+
+- **Text & Labels**
+  - Single/multi-line text with formatting
+  - Leaders with various arrow styles
+  - Tables with calculations
+  - Title blocks and borders
+
+### 4. Organization & Management
+- **Layers**
+  - Unlimited layers with properties
+  - Layer states and filters
+  - Layer templates for standards
+
+- **Blocks & Libraries**
+  - Create reusable components
+  - Dynamic blocks with parameters
+  - Symbol libraries (architectural, electrical, mechanical)
+  - External reference support
+
+### 5. Data Exchange
+- **Import/Export**
+  - DXF (AutoCAD R12-2018)
+  - DWG read support
+  - SVG, PDF, PNG export
+  - CSV for BOM/table data
+
+## System Architecture
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Qt6 Desktop Client                       │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                      Main Application Window                 │ │
+│ │ ┌─────────┬─────────────────────────────────┬─────────────┐ │ │
+│ │ │ Ribbon  │                                 │   Inspector  │ │ │
+│ │ │ Menu    │      Drawing Canvas             │   Panel      │ │ │
+│ │ │         │      (QGraphicsView)            │              │ │ │
+│ │ ├─────────┤                                 ├─────────────┤ │ │
+│ │ │ Tool    │                                 │   Layers    │ │ │
+│ │ │ Palette │                                 │   Panel     │ │ │
+│ │ │         │                                 │             │ │ │
+│ │ ├─────────┴─────────────────────────────────┴─────────────┤ │ │
+│ │ │              Command Line / Status Bar                   │ │ │
+│ │ └───────────────────────────────────────────────────────────┘ │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                               │                                   │
+│                      Client Service Layer                         │
+│ ┌─────────────────────────────┴─────────────────────────────┐   │
+│ │  ┌────────────┐  ┌──────────────┐  ┌─────────────────┐  │   │
+│ │  │ API Client │  │ State Manager │  │ Cache Manager   │  │   │
+│ │  │ (gRPC)     │  │              │  │                 │  │   │
+│ │  └────────────┘  └──────────────┘  └─────────────────┘  │   │
+│ └───────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                        Network (gRPC/REST)
+                                │
+┌─────────────────────────────────────────────────────────────────┐
+│                      CAD Backend Service                         │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                         API Layer                            │ │
+│ │  ┌────────────────┐           ┌────────────────────────┐   │ │
+│ │  │  gRPC Server   │           │  REST API (Optional)   │   │ │
+│ │  │  Port: 50051   │           │  Port: 8080            │   │ │
+│ │  └────────────────┘           └────────────────────────┘   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                      Business Logic Layer                    │ │
+│ │  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │ │
+│ │  │  Drawing    │  │  Geometry   │  │   Constraint     │   │ │
+│ │  │  Service    │  │  Engine     │  │   Solver         │   │ │
+│ │  └─────────────┘  └─────────────┘  └──────────────────┘   │ │
+│ │  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │ │
+│ │  │  Document   │  │  Selection  │  │   Export         │   │ │
+│ │  │  Manager    │  │  Service    │  │   Service        │   │ │
+│ │  └─────────────┘  └─────────────┘  └──────────────────┘   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                        Data Layer                            │ │
+│ │  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │ │
+│ │  │  Document   │  │  Spatial    │  │   File           │   │ │
+│ │  │  Store      │  │  Index      │  │   Storage        │   │ │
+│ │  └─────────────┘  └─────────────┘  └──────────────────┘   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Qt6 Client Architecture
+
+### UI Component Structure
+
+```
+qt_client/
+├── main.py                      # Application entry point
+├── requirements.txt             # PyQt6, grpcio, etc.
+├── resources/
+│   ├── icons/                   # Tool icons (SVG)
+│   ├── cursors/                 # Custom cursors
+│   ├── patterns/                # Hatch patterns
+│   └── themes/                  # Dark/light themes
+├──
+├── ui/
+│   ├── main_window.py          # QMainWindow subclass
+│   ├── ribbon/
+│   │   ├── ribbon_widget.py    # Ribbon interface
+│   │   ├── home_tab.py         # Draw tools
+│   │   ├── modify_tab.py       # Edit tools
+│   │   ├── annotate_tab.py     # Dimensions/text
+│   │   └── view_tab.py         # Display options
+│   ├──
+│   ├── canvas/
+│   │   ├── cad_view.py         # QGraphicsView subclass
+│   │   ├── cad_scene.py        # QGraphicsScene subclass
+│   │   ├── grid_overlay.py     # Grid display
+│   │   ├── cursor_tracker.py   # Crosshair/snap indicator
+│   │   └── selection_rect.py   # Selection rectangle
+│   ├──
+│   ├── panels/
+│   │   ├── properties_panel.py # Entity properties
+│   │   ├── layers_panel.py     # Layer manager
+│   │   ├── blocks_panel.py     # Block library
+│   │   └── command_line.py     # CAD command input
+│   ├──
+│   ├── dialogs/
+│   │   ├── settings_dialog.py  # Preferences
+│   │   ├── dim_style_dialog.py # Dimension styles
+│   │   └── print_dialog.py     # Print/plot setup
+│   └──
+│       widgets/
+│       ├── color_button.py      # Color picker
+│       ├── line_type_combo.py  # Line style selector
+│       └── coord_display.py     # X,Y coordinate display
+├──
+├── graphics/
+│   ├── items/
+│   │   ├── base_item.py        # Base QGraphicsItem
+│   │   ├── line_item.py        # Line graphics item
+│   │   ├── circle_item.py      # Circle graphics item
+│   │   ├── arc_item.py         # Arc graphics item
+│   │   ├── text_item.py        # Text annotation
+│   │   └── dimension_item.py   # Dimension graphics
+│   ├──
+│   ├── handles/
+│   │   ├── grip_handle.py      # Resize/edit grips
+│   │   ├── control_point.py    # Spline control points
+│   │   └── rotation_handle.py  # Rotation grip
+│   └──
+│       tools/
+│       ├── base_tool.py        # Tool interface
+│       ├── select_tool.py      # Selection tool
+│       ├── line_tool.py        # Line drawing tool
+│       ├── circle_tool.py      # Circle tool
+│       └── dimension_tool.py   # Dimensioning tool
+├──
+├── core/
+│   ├── api_client.py           # gRPC client wrapper
+│   ├── document_model.py       # Local document model
+│   ├── command_manager.py      # Undo/redo system
+│   ├── selection_manager.py    # Selection state
+│   └── snap_engine.py          # Client-side snapping
+├──
+├── utils/
+│   ├── geometry.py             # Geometry helpers
+│   ├── converters.py           # Unit conversions
+│   └── shortcuts.py            # Keyboard shortcuts
+└──
+    tests/
+    ├── test_tools.py
+    ├── test_graphics.py
+    └── test_api_client.py
+```
+
+### Key Qt6 Implementation Details
+
+#### 1. Main Window Structure
+
+```python
+# ui/main_window.py
+from PyQt6.QtWidgets import QMainWindow, QDockWidget
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QAction, QKeySequence
+
+class CADMainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("PyCAD 2D Professional")
+        self.setGeometry(100, 100, 1400, 900)
+
+        # Setup UI components
+        self._setup_ribbon()
+        self._setup_canvas()
+        self._setup_panels()
+        self._setup_statusbar()
+        self._setup_shortcuts()
+
+    def _setup_ribbon(self):
+        """Create ribbon interface"""
+        self.ribbon = RibbonWidget()
+        self.setMenuWidget(self.ribbon)
+
+        # Connect ribbon signals
+        self.ribbon.tool_selected.connect(self.on_tool_selected)
+
+    def _setup_canvas(self):
+        """Setup main drawing area"""
+        self.scene = CADScene()
+        self.view = CADView(self.scene)
+        self.setCentralWidget(self.view)
+
+        # Enable OpenGL for performance
+        self.view.setViewport(QOpenGLWidget())
+```
+
+#### 2. Drawing Canvas Implementation
+
+```python
+# ui/canvas/cad_view.py
+from PyQt6.QtWidgets import QGraphicsView
+from PyQt6.QtCore import Qt, QPointF, pyqtSignal
+from PyQt6.QtGui import QPainter, QWheelEvent
+
+class CADView(QGraphicsView):
+    # Signals
+    mouse_moved = pyqtSignal(QPointF)  # World coordinates
+    zoom_changed = pyqtSignal(float)
+
+    def __init__(self, scene):
+        super().__init__(scene)
+
+        # View settings
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setMouseTracking(True)
+
+        # Zoom settings
+        self.zoom_factor = 1.0
+        self.min_zoom = 0.01
+        self.max_zoom = 100.0
+
+        # Grid and snap
+        self.grid_size = 10.0
+        self.show_grid = True
+        self.snap_to_grid = True
+
+    def wheelEvent(self, event: QWheelEvent):
+        """Handle zoom with mouse wheel"""
+        # Scale factor
+        scale_factor = 1.15
+
+        if event.angleDelta().y() > 0:
+            # Zoom in
+            self.zoom_factor *= scale_factor
+        else:
+            # Zoom out
+            self.zoom_factor /= scale_factor
+
+        # Apply limits
+        self.zoom_factor = max(self.min_zoom,
+                              min(self.max_zoom, self.zoom_factor))
+
+        # Apply transformation
+        self.setTransform(QTransform().scale(
+            self.zoom_factor,
+            self.zoom_factor
+        ))
+
+        self.zoom_changed.emit(self.zoom_factor)
+```
+
+#### 3. Tool System
+
+```python
+# graphics/tools/base_tool.py
+from abc import ABC, abstractmethod
+from PyQt6.QtCore import QObject, pyqtSignal
+
+class BaseTool(QObject, ABC):
+    # Signals
+    finished = pyqtSignal(object)  # Emits created entity
+    cancelled = pyqtSignal()
+
+    def __init__(self, scene, api_client):
+        super().__init__()
+        self.scene = scene
+        self.api = api_client
+        self.active = False
+        self.preview_item = None
+
+    @abstractmethod
+    def activate(self):
+        """Activate the tool"""
+        self.active = True
+
+    @abstractmethod
+    def deactivate(self):
+        """Deactivate the tool"""
+        self.active = False
+        if self.preview_item:
+            self.scene.removeItem(self.preview_item)
+
+    @abstractmethod
+    def on_mouse_press(self, event):
+        """Handle mouse press"""
+        pass
+
+    @abstractmethod
+    def on_mouse_move(self, event):
+        """Handle mouse move"""
+        pass
+
+    @abstractmethod
+    def on_mouse_release(self, event):
+        """Handle mouse release"""
+        pass
+
+# graphics/tools/line_tool.py
+class LineTool(BaseTool):
+    def __init__(self, scene, api_client):
+        super().__init__(scene, api_client)
+        self.start_point = None
+        self.temp_line = None
+
+    def on_mouse_press(self, event):
+        if not self.start_point:
+            # First click - set start point
+            self.start_point = self.snap_point(event.scenePos())
+            self.scene.addEllipse(
+                self.start_point.x() - 2,
+                self.start_point.y() - 2,
+                4, 4
+            )
+        else:
+            # Second click - create line
+            end_point = self.snap_point(event.scenePos())
+            self.create_line(self.start_point, end_point)
+
+    def on_mouse_move(self, event):
+        if self.start_point and not self.temp_line:
+            # Show preview line
+            current_pos = self.snap_point(event.scenePos())
+            if self.preview_item:
+                self.scene.removeItem(self.preview_item)
+
+            self.preview_item = self.scene.addLine(
+                self.start_point.x(),
+                self.start_point.y(),
+                current_pos.x(),
+                current_pos.y()
+            )
+            self.preview_item.setPen(QPen(Qt.gray, 1, Qt.DashLine))
+```
+
+## Development Phases & Work Items
+
+### Phase 1: Foundation (Weeks 1-4)
+
+#### Backend Core
+1. **Geometry Engine** [1 week]
+   - Point, Vector, Line, Circle, Arc classes
+   - Intersection algorithms
+   - Distance/angle calculations
+   - Bounding box computation
+   - Unit tests for all geometry
+
+2. **Document Model** [3 days]
+   - Document class with metadata
+   - Entity management (add/remove/update)
+   - Layer system
+   - Property management
+   - Serialization/deserialization
+
+3. **Basic API** [4 days]
+   - gRPC service definition
+   - Create/open/save document
+   - Basic drawing operations (line, circle)
+   - Entity query operations
+   - Error handling
+
+#### Qt6 Client Foundation
+4. **Main Application Shell** [3 days]
+   - Main window with menu/toolbar
+   - Basic QGraphicsView setup
+   - Coordinate system setup
+   - Status bar with coordinates
+
+5. **API Client Integration** [2 days]
+   - gRPC client wrapper
+   - Async communication
+   - Error handling
+   - Connection management
+
+6. **Basic Drawing Canvas** [4 days]
+   - Pan/zoom functionality
+   - Grid display
+   - Crosshair cursor
+   - Basic selection rectangle
+
+### Phase 2: Core Drawing Tools (Weeks 5-8)
+
+#### Drawing Tools
+7. **Line Tool** [3 days]
+   - Single line mode
+   - Polyline mode
+   - Orthogonal constraints
+   - Preview while drawing
+
+8. **Circle & Arc Tools** [4 days]
+   - Center-radius circle
+   - 2-point circle
+   - 3-point circle
+   - 3-point arc
+   - Start-center-end arc
+
+9. **Rectangle & Polygon** [3 days]
+   - Rectangle by corners
+   - Rectangle by center
+   - Regular polygon (3-12 sides)
+   - Inscribed/circumscribed options
+
+#### Precision Features
+10. **Snap System** [1 week]
+    - Endpoint, midpoint, center snaps
+    - Intersection detection
+    - Perpendicular/tangent snaps
+    - Snap indicators/markers
+    - Snap priority system
+
+11. **Grid & Guides** [3 days]
+    - Configurable grid spacing
+    - Grid snap on/off
+    - Ruler guides
+    - Polar tracking
+    - Ortho mode
+
+### Phase 3: Editing & Modification (Weeks 9-12)
+
+#### Selection System
+12. **Selection Tools** [4 days]
+    - Single pick selection
+    - Window/crossing selection
+    - Selection filters (by type/layer)
+    - Selection highlighting
+    - Quick select
+
+13. **Basic Modifications** [1 week]
+    - Move tool with preview
+    - Copy tool
+    - Rotate with reference point
+    - Scale uniform/non-uniform
+    - Mirror with axis selection
+
+14. **Advanced Modifications** [1 week]
+    - Trim/extend to boundary
+    - Offset with distance
+    - Fillet with radius
+    - Chamfer with distance
+    - Break at point
+
+#### Organization
+15. **Layer Management** [4 days]
+    - Layer panel UI
+    - Create/delete layers
+    - Layer properties (color, line type)
+    - Current layer indicator
+    - Layer visibility/lock
+
+16. **Undo/Redo System** [3 days]
+    - Command pattern implementation
+    - Undo/redo with preview
+    - History panel
+    - Memory management
+    - Persistent undo
+
+### Phase 4: Annotation & Documentation (Weeks 13-16)
+
+#### Dimensioning
+17. **Linear Dimensions** [1 week]
+    - Horizontal/vertical dimensions
+    - Aligned dimensions
+    - Baseline dimensions
+    - Continuous dimensions
+    - Dimension style settings
+
+18. **Other Dimensions** [4 days]
+    - Angular dimensions
+    - Radial/diameter dimensions
+    - Arc length dimensions
+    - Ordinate dimensions
+    - Leader lines
+
+#### Text & Annotation
+19. **Text Tools** [4 days]
+    - Single-line text
+    - Multi-line text editor
+    - Text formatting (font, size)
+    - Text alignment options
+    - Special symbols
+
+20. **Tables & Attributes** [3 days]
+    - Basic table creation
+    - Cell editing
+    - Table styles
+    - BOM generation
+    - Attribute extraction
+
+### Phase 5: Data Exchange (Weeks 17-18)
+
+21. **DXF Import/Export** [1 week]
+    - DXF parser implementation
+    - Entity mapping
+    - Layer preservation
+    - Text/dimension support
+    - Error handling
+
+22. **Other Formats** [4 days]
+    - SVG export
+    - PDF export with layers
+    - PNG/JPEG export
+    - Print preview
+    - Plot settings
+
+### Phase 6: Advanced Features (Weeks 19-20)
+
+23. **Blocks & Libraries** [1 week]
+    - Block creation
+    - Block insertion
+    - Block editor
+    - Symbol libraries
+    - Dynamic blocks (basic)
+
+24. **Constraints System** [1 week]
+    - Geometric constraints UI
+    - Constraint solver integration
+    - Constraint visualization
+    - Auto-constrain
+    - Constraint management
+
+### Phase 7: Polish & Performance (Weeks 21-24)
+
+25. **Performance Optimization** [1 week]
+    - Spatial indexing (R-tree)
+    - Level-of-detail rendering
+    - Caching strategies
+    - Memory optimization
+    - GPU acceleration
+
+26. **UI/UX Polish** [1 week]
+    - Dark theme support
+    - Customizable toolbars
+    - Keyboard shortcuts
+    - Context menus
+    - Tool tips/help
+
+27. **Testing & Documentation** [2 weeks]
+    - Comprehensive test suite
+    - Performance benchmarks
+    - User documentation
+    - API documentation
+    - Tutorial creation
+
+## Technical Specifications
+
+### Performance Requirements
+- Handle drawings with 100,000+ entities
+- 60 FPS interaction with 10,000 visible entities
+- Sub-second file open/save for typical drawings
+- Memory usage under 500MB for typical drawings
+- Zoom range: 0.01x to 100x
+
+### Platform Requirements
+- Python 3.9+
+- Qt 6.3+
+- OpenGL 3.3+ for hardware acceleration
+- 4GB RAM minimum, 8GB recommended
+- 1920x1080 minimum display resolution
+
+### Development Stack
+- **Backend**: Python 3.9+, gRPC, NumPy
+- **Frontend**: PyQt6, QGraphicsView framework
+- **Testing**: pytest, Qt Test framework
+- **Build**: Docker, GitHub Actions
+- **Documentation**: Sphinx, MkDocs
+
+## Risk Mitigation
+
+### Technical Risks
+1. **Performance with large drawings**
+   - Mitigation: Implement spatial indexing early
+   - Use level-of-detail rendering
+   - Profile regularly during development
+
+2. **Qt6 graphics performance**
+   - Mitigation: Use OpenGL viewport
+   - Implement custom item caching
+   - Consider scene graph optimization
+
+3. **DXF compatibility**
+   - Mitigation: Use established libraries initially
+   - Test with real-world files
+   - Implement subset first
+
+### Schedule Risks
+1. **Constraint solver complexity**
+   - Mitigation: Use existing solver library
+   - Implement basic constraints first
+   - Consider phased rollout
+
+2. **UI polish time**
+   - Mitigation: Use Qt Designer for layouts
+   - Leverage Qt style sheets
+   - Regular user feedback
+
+## Success Metrics
+
+### Phase 1 Success (Month 1)
+- Basic shapes can be drawn and saved
+- Pan/zoom works smoothly
+- Documents persist between sessions
+
+### Phase 2 Success (Month 2)
+- All basic drawing tools functional
+- Snap system working accurately
+- Selection and basic edits work
+
+### Phase 3 Success (Month 3)
+- Complete editing toolkit
+- Layer system functional
+- Undo/redo works reliably
+
+### Final Success (Month 6)
+- DXF import/export works with AutoCAD
+- Performance meets specifications
+- UI is polished and professional
+- System is stable for daily use
+
+## Conclusion
+
+This comprehensive PRD and architecture provides a clear roadmap for building a professional 2D CAD system. The phased approach allows for iterative development while maintaining architectural integrity. The Qt6 client provides a native, high-performance user experience, while the microservice backend enables future scalability and multi-platform support.
