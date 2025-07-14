@@ -1,0 +1,1 @@
+"""Graphics items package."""
